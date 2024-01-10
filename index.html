@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gallery</title>
+</head>
+<body>
+
+<form id="galleryForm">
+    <label for="author">Author:</label>
+    <input type="text" id="author" name="author" required>
+
+    <label for="title">Title:</label>
+    <input type="text" id="title" name="title" required>
+
+    <label for="price">Price:</label>
+    <input type="number" id="price" name="price" required>
+
+    <label for="year">Year:</label>
+    <input type="number" id="year" name="year" required>
+
+    <button type="submit">Add Artwork</button>
+</form>
+
+<button onclick="displayTotalPrice()">Total Price</button>
+<button onclick="displayTopThreeArtworks()">Top Three Artworks</button>
+<button onclick="displayArtworkByAuthor()">Artwork by Author</button>
+<button onclick="displayArtworksByAuthors()">Artworks by Authors</button>
+
+<script>
+    function Artist(firstName, lastName, birthDate) {
+      this.firstName = firstName;
+      this.lastName = lastName;
+      this.birthDate = birthDate;
+    }
+
+    function Artwork(author, title, price, year) {
+      this.author = author;
+      this.title = title;
+      this.price = price;
+      this.year = year;
+    }
+
+    function Gallery() {
+      this.artworks = [];
+      this.artists = [];
+
+      Gallery.prototype.totalPrice = function () {
+        return this.artworks.reduce((total, artwork) => total + artwork.price, 0);
+      };
+
+      Gallery.prototype.topThreeArtworks = function () {
+        return this.artworks
+          .sort((a, b) => b.price - a.price)
+          .slice(0, 3);
+      };
+
+      Gallery.prototype.artworkByAuthor = function (authorName) {
+        return this.artworks
+          .filter(artwork => artwork.author.firstName === authorName || artwork.author.lastName === authorName)
+          .sort((a, b) => a.price - b.price);
+      };
+
+      Gallery.prototype.artworksByAuthors = function () {
+        const artworksByAuthors = {};
+        this.artworks.forEach(artwork => {
+          const authorKey = `${artwork.author.firstName} ${artwork.author.lastName}`;
+          if (!artworksByAuthors[authorKey]) {
+            artworksByAuthors[authorKey] = [];
+          }
+          artworksByAuthors[authorKey].push(artwork);
+        });
+        return artworksByAuthors;
+      };
+
+      Gallery.prototype.addArtwork = function (artwork) {
+        this.artworks.push(artwork);
+      };
+
+      Gallery.prototype.displayResults = function (results) {
+        console.log(results);
+      };
+    }
+
+    const gallery = new Gallery();
+
+    const form = document.getElementById('galleryForm');
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      const author = new Artist("John", "Doe", "1990-01-01"); // Replace with form input values
+      const artwork = new Artwork(author, form.title.value, parseInt(form.price.value), parseInt(form.year.value));
+      gallery.addArtwork(artwork);
+    });
+
+    function displayTotalPrice() {
+      const totalPrice = gallery.totalPrice();
+      gallery.displayResults({ "Total Price": totalPrice });
+    }
+
+    function displayTopThreeArtworks() {
+      const topThreeArtworks = gallery.topThreeArtworks();
+      gallery.displayResults({ "Top Three Artworks": topThreeArtworks });
+    }
+
+    function displayArtworkByAuthor() {
+      const authorName = prompt("Enter author's first or last name:");
+      const artworksByAuthor = gallery.artworkByAuthor(authorName);
+      gallery.displayResults({ [`Artwork by ${authorName}`]: artworksByAuthor });
+    }
+
+    function displayArtworksByAuthors() {
+      const artworksByAuthors = gallery.artworksByAuthors();
+      gallery.displayResults({ "Artworks by Authors": artworksByAuthors });
+    }
+
+  </script>
+
+</body>
+</html>
